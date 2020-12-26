@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset="UTF-8" http-equiv="Cache-Control" content="no-cache">
+		<title>Models</title>
+		<style>
+		    a, p { 
+			    color:#FFCCCC;text-decoration: none; font-size:22px;
+			    font-weight:150; font-family: Geneva, Arial, Helvetica, sans-serif;
+		    }
+		    body {
+		    	background-color:#222222;
+		    }
+	  	</style>
+	</head>
+	<body>
+		<div style="background-color:#444444; text-align: center;">
+				<a href="{{ url_for('prepare_data') }}">Выбрать датасет</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a href="{ url_for('use_model') }}">Использовать модель</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="{{ url_for('index') }}">Назад</a>
+		</div>
+
+		{% if not datasets %}
+		<h1><p>Сначала добавьте датасеты</p></h1>
+		{% else %}
+		<table width="100%" cellspacing="0" cellpadding="5">
+			<tr>
+				<td width="300" valign="top">
+					<p style="font-size:18px">Здесь можно выбрать модель.</p>
+					<p style="font-size:16px">Если не указать параметр, то будет выбрано значение по умолчанию. Поле model_name должно быть и быть уникальным.</p>
+					<form method="post" action="{{ url_for('prepare_model')}}">
+						<p style="font-size:14px">Выберите модель</p>
+						<p><select name="select_model">
+							<option value="RandomForest">Random Forest</option>
+							<option value="GradientBoosting">Gradient Boosting</option>
+						</select></p>
+						<p style="font-size:14px">Выберите датасет</p>
+						<p><select name="select_dataset">
+							{% for dataset in datasets.keys() %}
+								<option value="{{dataset}}">{{dataset}}</option>
+							{% endfor %}
+						</select></p>
+						<p><input type="text" placeholder="model name" name="model_name"></p>
+						<p><input type="text" placeholder="n_estimators" name="n_estimators"></p>
+						<p><input type="text" placeholder="max_depth" name="max_depth"></p>
+						<p><input type="text" placeholder="feature_subsample_size" name="feature_subsample_size"></p>
+						<p><input type="text" placeholder="learning_rate (только для GB)" name="learning_rate"></p>
+						<p><input type="submit" value="Train"></p> 
+					</form>
+				</td>
+				<td width="600" valign="top">
+				<p style="font-size:18px">Здесь будет информация об обучении последней добавленной модели.</p>
+				{% if test!=0 %}
+					<p>Train RMSE = {{test}}, Время обучения = {{time}} с.</p>
+					<div style="text-align: center">
+						<img  align="left" src='static/{{loss_fname}}' />
+					</div>
+					<div style="text-align: center">
+						<p> Не забудьте очистить графики, чтобы не засорять память! </p>
+						<form method="post" action="{{ url_for('clear_graphics')}}">
+							<p><input type="submit" value="Clear graphics"></p> 
+						</form>
+					</div>
+				{% endif %}
+				</td>
+			</tr>
+		</table>
+		{% endif %}
+
+	</body>
+</html>
+
