@@ -43,6 +43,8 @@ class RandomForestMSE:
             F = np.random.choice(a, size=self.K, replace=False)
             self.feat_subsamps.append(F)
             self.forest[i].fit(X[BootStrap[:, np.newaxis], F], y[BootStrap])
+        if not (y_val is None):
+            return np.sqrt(np.sum((self.predict(X_val) - y_val)**2) / y_val.size)
 
     def predict(self, X):
         """
