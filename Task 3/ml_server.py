@@ -172,3 +172,29 @@ def prepare_model():
         return redirect(url_for('prepare_model'))
     return render_template('models.html', datasets=datasets, test=round(train_RMSE, 2),
             time=round(train_time, 2), loss_fname=loss_fname)
+
+
+@app.route('/model_use', methods=['GET', 'POST'])
+def use_model():
+    global test_RMSE, message_use
+    if request.method == 'POST':
+        try:
+            request.form['index_col']
+        except:
+            index_col = None
+        else:
+            index_col = 0
+
+        data_addres = request.form['datatest_fname']
+        download_addres = request.form['download_fname']
+        try:
+            X = pd.read_csv(data_addres, index_col=index_col)
+            model = models[request.form['model_name']]
+            preds = model.predict(X.values)
+            pd.Series(preds).to_csv(download_addres, index=True)
+            message_use = "Done"
+        except Exception as e:
+            message_use = "Wrong path"
+        return redirect(url_for('use_model'))
+    return render_template('model_use.html', models=models, message=message_use,
+            params=params)
