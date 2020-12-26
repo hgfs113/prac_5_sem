@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset="UTF-8" http-equiv="Cache-Control" content="no-cache">
+		<title>Models</title>
+		<style>
+		    a, p { 
+			    color:#FFCCCC;text-decoration: none; font-size:22px;
+			    font-weight:150; font-family: Geneva, Arial, Helvetica, sans-serif;
+		    }
+		    body {
+		    	background-color:#222222;
+		    }
+	  	</style>
+	</head>
+
+	<body>
+ 
+
+		<div style="background-color:#444444; text-align: center">
+			<p>
+				<a href="{{ url_for('prepare_data') }}">Выбрать датасет</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a href="{{ url_for('prepare_model') }}">Выбрать и обучить модель</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a onClick="A()" style="background-color:#444444; text-align: right">Информация о моделях</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a href="{{ url_for('index') }}">Назад</a>
+			</p>
+		</div>
+
+
+				<h3><p style="text-align: center">Использование моделей.</p></h3>
+				{% if not models %}
+					<h1><p>Сначала добавьте модель</p></h1>
+				{% else %}
+					<p style="font-size:16px">Здесь вы можете получить предсказания любой подготовленной модели. Для этого необходимо добавить датасет. Добавленный датасет должен совпадать по полям с датасетов, на котором было проведено обучение модели. Чтобы посмотреть информацию о меделях и датасетах, нажмите на "Информация о моделях".</p>
+
+		 <table width="100%" cellspacing="0" cellpadding="5">
+		   <tr> 
+		    <td width="70%" valign="top">					
+					<form method="post" action="{{ url_for('use_model')}}">
+						<p><select name="model_name">
+							{% for model in models.keys() %}
+								<option value="{{model}}">{{model}}</option>
+							{% endfor %}
+						</select></p>
+						<p><input type="text" placeholder="Test dataset addres" name="datatest_fname"></p>
+						<p><input type="text" placeholder="Test download addres" name="download_fname"></p>
+						<p>0я колонка - индексы?<input type="checkbox" name="index_col"></p>
+						<p><button type="submit">OK</button></p>
+					</form>
+					<p>{{message}}</p>
+
+		    </td>
+		    <td valign="top">
+				<div id="inf_id" style='width: 100%; height: 300px; overflow: auto; display:none; text-align: left'>
+					{% for model, param in params.items() %}
+						<p style="font-size:16px">{{model}} : {{param}} </p>
+					{% endfor %}
+				</div>
+		    </td>
+		   </tr>
+		  </table>
+
+				{% endif %}
+	</body>
+</html>
+
+<script>
+	var a = 0;
+	function A() {
+		if (a==0) {
+			document.getElementById("inf_id").style.display="block";
+			a = 1
+		}
+		else {
+			document.getElementById("inf_id").style.display="none";
+			a = 0
+		}
+	}
+</script>
