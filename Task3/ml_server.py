@@ -71,6 +71,9 @@ def prepare_data():
                 train_fname = secure_filename(train_file.filename)
                 target_fname = secure_filename(target_file.filename)
 
+                train_file.save(os.path.join(app.config['UPLOAD_FOLDER'], train_fname))
+                target_file.save(os.path.join(app.config['UPLOAD_FOLDER'], target_fname))
+
                 X = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + train_fname,
                         index_col=index_col)
                 y = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + target_fname,
