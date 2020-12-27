@@ -27,6 +27,7 @@ train_RMSE = 0
 train_time = 0
 test_RMSE = 0
 loss_fname = ""
+preds = False
 
 
 @app.route('/')
@@ -187,7 +188,7 @@ def prepare_model():
 
 @app.route('/model_use', methods=['GET', 'POST'])
 def use_model():
-    global test_RMSE, message_use
+    global test_RMSE, message_use, preds
     if request.method == 'POST':
         data_file = request.files['datatest']
         if data_file:
@@ -201,21 +202,25 @@ def use_model():
             else:
                 index_col = 0
             try:
-                X = pd.read_csv(filename, index_col=index_col)
-                print(X.head())
+                X = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + filename, index_col=index_col)
+                model = models[request.form['model_name']]
+                preds = model.predict(X.values)
+                preds = pd.Series(preds)
+                preds.to_csv("preds.csv", index=True)
+                path = os.path.join(app.root_path, "preds.csv")
+                preds = True
+                return redirect(url_for('download'))
+                message_use = Done
             except:
-                pass
+                message_use = "Something went wrong"
+        return redirect(url_for('use_model'))
     return render_template('model_use.html', models=models, message=message_use,
             params=params)
 
-"""        try:
-            X = pd.read_csv(filename, index_col=index_col)
-            model = models[request.form['model_name']]
-            preds = model.predict(X.values)
-            pd.Series(preds).to_csv("preds.csv", index=True)
-            submit.to_csv("prediction.csv", index=True)
-            path = os.path.join(app.root_path, "preds.csv")
-            return send_from_directory(app.root_path, "./preds.csv")
-        except Exception as e:
-            message_use = "Something went wrong"
-        return redirect(url_for('use_model'))"""
+@app.route('/preds.csv')
+def download():
+    global preds
+    if preds:
+        preds = False
+        return send_from_directory(app.root_path, "./preds.csv")
+    return redirect(url_for('use_model'))
