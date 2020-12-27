@@ -212,8 +212,8 @@ def use_model():
                 preds.to_csv("preds.csv", index=True)
                 path = os.path.join(app.root_path, "preds.csv")
                 preds = True
+                message_use = "Done"
                 return redirect(url_for('download'))
-                message_use = Done
             except:
                 message_use = "Something went wrong"
         return redirect(url_for('use_model'))
