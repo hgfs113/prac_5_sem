@@ -39,14 +39,13 @@
 		 <table width="100%" cellspacing="0" cellpadding="5">
 		   <tr> 
 		    <td width="70%" valign="top">					
-					<form method="post" action="{{ url_for('use_model')}}">
+					<form method="post" enctype="multipart/form-data" action="{{ url_for('use_model')}}">
 						<p><select name="model_name">
 							{% for model in models.keys() %}
 								<option value="{{model}}">{{model}}</option>
 							{% endfor %}
 						</select></p>
-						<p><input type="text" placeholder="Test dataset addres" name="datatest_fname"></p>
-						<p><input type="text" placeholder="Test download addres" name="download_fname"></p>
+						<p><input type="file" name="datatest"></p>
 						<p>0я колонка - индексы?<input type="checkbox" name="index_col"></p>
 						<p><button type="submit">OK</button></p>
 					</form>

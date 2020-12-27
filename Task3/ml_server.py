@@ -1,5 +1,6 @@
-from flask import Flask, url_for, request
+from flask import Flask, url_for, request, send_from_directory
 from flask import render_template, redirect
+from werkzeug.utils import secure_filename
 import ensembles
 import numpy as np
 from sklearn.metrics import mean_squared_error
@@ -8,10 +9,13 @@ import os
 import matplotlib.pyplot as plt
 from time import time
 
+
 plt.style.use('ggplot')
 
 app = Flask(__name__, template_folder='html')
-
+UPLOAD_FOLDER = './uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER 
+ALLOWED_EXTENSIONS = set(['csv'])
 
 datasets = {}
 data_info = {}
@@ -23,6 +27,7 @@ train_RMSE = 0
 train_time = 0
 test_RMSE = 0
 loss_fname = ""
+preds = False
 
 
 @app.route('/')
@@ -57,38 +62,48 @@ def prepare_data():
             index_col = 0
 
         try:
-            request.form['data_train_fname']
+            request.form['data_target']
         except:
-            data_addres = request.form['data_fname']
             data_name = request.form['data_name']
-            data_target = request.form['data_target']
+            train_file = request.files['data_train_fname']
+            target_file = request.files['data_target_fname']
             try:
-                data = pd.read_csv(data_addres, index_col=index_col)
-                X = data.drop(columns=[data_target])
-                y = data[data_target].copy()
-                data = None
+                train_fname = secure_filename(train_file.filename)
+                target_fname = secure_filename(target_file.filename)
+
+                train_file.save(os.path.join(app.config['UPLOAD_FOLDER'], train_fname))
+                target_file.save(os.path.join(app.config['UPLOAD_FOLDER'], target_fname))
+
+                X = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + train_fname,
+                        index_col=index_col)
+                y = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + target_fname,
+                        index_col=index_col).iloc[:, 0]
                 datasets[data_name] = (X, y)
 
-                data_info[data_name] = {'data_addres':data_addres, 
-                        'data_target':data_target, 'data_shape':X.shape}
+                data_info[data_name] = {'train_addres':train_fname, 
+                        'target_addres':target_fname, 'data_shape':X.shape}
                 message = "Done"
             except Exception as e:
                 message = "Wrong path"
         else:
-            train_addres = request.form['data_train_fname']
-            target_addres = request.form['data_target_fname']
+            data_target = request.form['data_target']
             data_name = request.form['data_name']
-            try:
-                X = pd.read_csv(train_addres, index_col=index_col)
-                y = pd.read_csv(target_addres, index_col=index_col).iloc[:, 0]
-                datasets[data_name] = (X, y)
+            data_file = request.files['data_fname']
+            if data_file:
+                filename = secure_filename(data_file.filename)
+                data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                try:
+                    data = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + filename, index_col=index_col)
+                    X = data.drop(columns=[data_target])
+                    y = data[data_target].copy()
+                    data = None
+                    datasets[data_name] = (X, y)
 
-                data_info[data_name] = {'train_addres':train_addres, 
-                        'target_addres':target_addres, 'data_shape':X.shape}
-                message = "Done"
-            except Exception as e:
-                message = "Wrong path"
-
+                    data_info[data_name] = {'filename':filename, 
+                            'data_target':data_target, 'data_shape':X.shape}
+                    message = "Done"
+                except Exception as e:
+                    message = "Wrong path"
         return redirect(url_for('prepare_data'))
     return render_template('datasets.html', message=message, data_info=data_info)
 
@@ -176,25 +191,39 @@ def prepare_model():
 
 @app.route('/model_use', methods=['GET', 'POST'])
 def use_model():
-    global test_RMSE, message_use
+    global test_RMSE, message_use, preds
     if request.method == 'POST':
-        try:
-            request.form['index_col']
-        except:
-            index_col = None
-        else:
-            index_col = 0
-
-        data_addres = request.form['datatest_fname']
-        download_addres = request.form['download_fname']
-        try:
-            X = pd.read_csv(data_addres, index_col=index_col)
-            model = models[request.form['model_name']]
-            preds = model.predict(X.values)
-            pd.Series(preds).to_csv(download_addres, index=True)
-            message_use = "Done"
-        except Exception as e:
-            message_use = "Wrong path"
+        data_file = request.files['datatest']
+        if data_file:
+            filename = secure_filename(data_file.filename)
+            data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            print(filename)
+            try:
+                request.form['index_col']
+            except:
+                index_col = None
+            else:
+                index_col = 0
+            try:
+                X = pd.read_csv(app.config['UPLOAD_FOLDER'] + "/" + filename, index_col=index_col)
+                model = models[request.form['model_name']]
+                preds = model.predict(X.values)
+                preds = pd.Series(preds)
+                preds.to_csv("preds.csv", index=True)
+                path = os.path.join(app.root_path, "preds.csv")
+                preds = True
+                return redirect(url_for('download'))
+                message_use = Done
+            except:
+                message_use = "Something went wrong"
         return redirect(url_for('use_model'))
     return render_template('model_use.html', models=models, message=message_use,
             params=params)
+
+@app.route('/preds.csv')
+def download():
+    global preds
+    if preds:
+        preds = False
+        return send_from_directory(app.root_path, "./preds.csv")
+    return redirect(url_for('use_model'))
