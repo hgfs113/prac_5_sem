@@ -40,11 +40,13 @@
 		   <tr> 
 		    <td width="70%" valign="top">					
 					<form method="post" enctype="multipart/form-data" action="{{ url_for('use_model')}}">
+						<p>Выберете модель</p>
 						<p><select name="model_name">
 							{% for model in models.keys() %}
 								<option value="{{model}}">{{model}}</option>
 							{% endfor %}
 						</select></p>
+						<p>Загрузите тестовый датасет</p>
 						<p><input type="file" name="datatest"></p>
 						<p>0я колонка - индексы?<input type="checkbox" name="index_col"></p>
 						<p><button type="submit">OK</button></p>
