@@ -1,10 +1,10 @@
 FROM python:3.8-slim
 
-COPY /Flask /root/Flask
+COPY /Task3 /root/Task3
 
-RUN chown -R root:root /root/Flask
+RUN chown -R root:root /root/Task3
 
-WORKDIR /root/Flask
+WORKDIR /root/Task3
 RUN pip3 install -r requirements.txt
 
 ENV F_APP run.py
