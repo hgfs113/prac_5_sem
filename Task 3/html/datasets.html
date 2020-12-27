@@ -39,20 +39,20 @@
 		   <tr> 
 		    <td width="70%" valign="top">					
 				<p>Train и target в одном файле.</p>
-				<form method="post" action="{{ url_for('prepare_data') }}">
-					<input type="text" placeholder="Dataset addres" name="data_fname">&nbsp;
+				<form method="post" enctype="multipart/form-data" action="{{ url_for('prepare_data') }}">
+					<p><input type="file" name="data_fname">&nbsp;
 					<input type="text" placeholder="Target name" name="data_target">&nbsp;
 					<input type="text" placeholder="Dataset name" name="data_name">&nbsp;
 					<input type="checkbox" name="index_col">&nbsp;
-					<button type="submit">OK</button>
+					<button type="submit">OK</button></p>
 				</form>
 				<p>Train и target в разных файлах.</p>
-				<form method="post" action="{{ url_for('prepare_data') }}">
-					<input type="text" placeholder="Dataset train addres" name="data_train_fname">&nbsp;
-					<input type="text" placeholder="Dataset target addres" name="data_target_fname">&nbsp;
+				<form method="post" enctype="multipart/form-data" action="{{ url_for('prepare_data') }}">
+					<p><input type="file" name="data_train_fname">&nbsp;
+					<input type="file" name="data_target_fname">&nbsp;
 					<input type="text" placeholder="Dataset name" name="data_name">&nbsp;
 					<input type="checkbox" name="index_col">&nbsp;
-					<button type="submit">OK</button>
+					<button type="submit">OK</button></p>
 				</form>
 
 
